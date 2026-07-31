@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Argument Logic Evaluator</title>
+  <style>
+    body { font-family: system-ui, sans-serif; max-width: 700px; margin: 40px auto; padding: 0 20px; line-height: 1.5; }
+    label { font-weight: bold; display: block; margin-top: 15px; }
+    textarea, input { width: 100%; box-sizing: border-box; margin-top: 5px; padding: 10px; font-family: inherit; }
+    textarea { height: 80px; }
+    button { margin-top: 20px; padding: 12px 20px; background: #0066cc; color: white; border: none; border-radius: 4px; cursor: pointer; }
+    button:disabled { background: #ccc; }
+    #output { margin-top: 30px; padding: 15px; background: #f4f4f4; border-radius: 4px; white-space: pre-wrap; }
+  </style>
+</head>
+<body>
+
+  <h1>Argument Logic Evaluator</h1>
+
+  <label for="apiKey">OpenAI API Key (for testing):</label>
+  <input type="password" id="apiKey" placeholder="sk-..." />
+
+  <label for="opponentClaim">1. What argument is your opponent making?</label>
+  <textarea id="opponentClaim"></textarea>
+
+  <label for="steelman">2. Why is their argument strong or reasonable?</label>
+  <textarea id="steelman"></textarea>
+
+  <label for="critique">3. Where do you think their argument is flawed?</label>
+  <textarea id="critique"></textarea>
+
+  <label for="betterIdea">4. Why is your alternative idea better?</label>
+  <textarea id="betterIdea"></textarea>
+
+  <button id="submitBtn" onclick="evaluateArgument()">Evaluate Logic</button>
+
+  <div id="output">Evaluation results will appear here...</div>
+
+  <script>
+    async function evaluateArgument() {
+      const apiKey = document.getElementById('apiKey').value;
+      const opponentClaim = document.getElementById('opponentClaim').value;
+      const steelman = document.getElementById('steelman').value;
+      const critique = document.getElementById('critique').value;
+      const betterIdea = document.getElementById('betterIdea').value;
+      const outputDiv = document.getElementById('output');
+      const submitBtn = document.getElementById('submitBtn');
+
+      if (!apiKey) {
+        alert('Please enter an API key.');
+        return;
+      }
+
+      submitBtn.disabled = true;
+      outputDiv.innerText = 'Analyzing argument structure...';
+
+      const systemPrompt = `You are an expert logic and rhetoric evaluator.
+Analyze the user's input across four distinct fields:
+Field 1 (Opponent's Claim): \${opponentClaim}
+Field 2 (Steelman): \${steelman}
+Field 3 (Critique): \${critique}
+Field 4 (Alternative Idea): \${betterIdea}
+
+Evaluate whether:
+1. Field 3 directly critiques Field 1 and 2, or if it commits logical fallacies like a Strawman or Red Herring.
+2. Field 2 genuinely engages with the best version of the opponent's argument.
+3. Field 4 provides a meaningful alternative addressing the flaw in Field 3.
+
+Provide concise, direct feedback targeting logic integrity and fallacy detection.`;
+
+      try {
+        const response = await fetch('https://api.openai.com/v1/chat/completions', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer \${apiKey}`
+          },
+          body: JSON.stringify({
+            model: 'gpt-4o-mini',
+            messages: [{ role: 'system', content: systemPrompt }]
+          })
+        });
+
+        const data = await response.json();
+        if (data.error) {
+          outputDiv.innerText = 'Error: ' + data.error.message;
+        } else {
+          outputDiv.innerText = data.choices[0].message.content;
+        }
+      } catch (err) {
+        outputDiv.innerText = 'Request failed: ' + err.message;
+      } finally {
+        submitBtn.disabled = false;
+      }
+    }
+  </script>
+</body>
+</html>

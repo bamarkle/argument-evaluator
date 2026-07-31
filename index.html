@@ -18,7 +18,7 @@
 
   <h1>Argument Logic Evaluator</h1>
 
-  <label for="apiKey">Gemini API Key (for testing):</label>
+  <label for="apiKey">Gemini API Key (faor testing):</label>
   <input type="password" id="apiKey" placeholder="sk-..." />
 
   <label for="opponentClaim">1. What argument is your opponent making?</label>
@@ -37,7 +37,7 @@
 
   <div id="output">Evaluation results will appear here...</div>
 
-  <script>
+<script>
   async function evaluateArgument() {
     const apiKey = document.getElementById('apiKey').value.trim();
     const opponentClaim = document.getElementById('opponentClaim').value;
@@ -69,8 +69,8 @@ Evaluate whether:
 
 Provide concise, direct feedback targeting logic integrity and fallacy detection.`;
 
-    // Gemini API REST Endpoint
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
+    // Updated to gemini-3.6-flash
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key=${apiKey}`;
 
     try {
       const response = await fetch(url, {
@@ -89,7 +89,6 @@ Provide concise, direct feedback targeting logic integrity and fallacy detection
       if (data.error) {
         outputDiv.innerText = 'Error: ' + data.error.message;
       } else {
-        // Extract text from Gemini's response structure
         const feedback = data.candidates[0].content.parts[0].text;
         outputDiv.innerText = feedback;
       }

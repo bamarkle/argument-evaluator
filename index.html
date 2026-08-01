@@ -478,7 +478,6 @@
       const outputDiv = document.getElementById('output');
       const submitBtn = document.getElementById('submitBtn');
 
-      // Package field inputs to send to the backend
       const payload = {
         opponentClaim: document.getElementById('opponentClaim').value,
         steelman: document.getElementById('steelman').value,
@@ -507,9 +506,20 @@
 
         const data = await response.json();
         
-        // Handle response from server (supports raw text string, parsed markdown, or json property)
-        const feedback = data.result || data.evaluation || data.feedback || data;
-        outputDiv.innerHTML = marked.parse(feedback);
+        // Extract string safely across common object structures or raw text payloads
+        let markdownText = "";
+        if (typeof data === 'string') {
+          markdownText = data;
+        } else if (data && typeof data === 'object') {
+          markdownText = data.result || 
+                         data.evaluation || 
+                         data.feedback || 
+                         data.text || 
+                         (data.candidates && data.candidates[0]?.content?.parts[0]?.text) || 
+                         JSON.stringify(data, null, 2);
+        }
+
+        outputDiv.innerHTML = marked.parse(markdownText);
 
       } catch (err) {
         outputDiv.innerHTML = '<strong>Request failed:</strong> ' + err.message;

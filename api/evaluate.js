@@ -53,7 +53,7 @@ You MUST follow this exact formatting structure for your response every single t
   - **Why it matters:** [Explain why proposing a practical, superior fix completes a strong counter-argument]
   - **How to fix it:** [Provide a concrete example of what a stronger alternative and explanation would look like]`;
 
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key=${apiKey}`;
 
   try {
     const response = await fetch(url, {

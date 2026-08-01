@@ -62,7 +62,7 @@
       margin: 0;
     }
 
-    textarea, input[type="text"], input[type="password"] {
+    textarea, input[type="text"] {
       width: 100%;
       box-sizing: border-box;
       margin-top: 6px;
@@ -184,11 +184,6 @@
 
   <h1>Argument Logic Evaluator</h1>
 
-  <div style="margin-bottom: 20px;">
-    <label for="apiKey">Gemini API Key (saved locally):</label>
-    <input type="password" id="apiKey" placeholder="AIzaSy..." />
-  </div>
-
   <!-- FIELD 1 GROUP (Red) -->
   <div class="field-group group-f1">
     <label for="opponentClaim">1. What argument is your opponent making?</label>
@@ -298,11 +293,6 @@
 
   <script>
     document.addEventListener('DOMContentLoaded', () => {
-      const savedKey = localStorage.getItem('gemini_key');
-      if (savedKey) {
-        document.getElementById('apiKey').value = savedKey;
-      }
-
       const radioButtons = document.querySelectorAll('input[name="usedSourceBefore"]');
       const yesFields = document.getElementById('sourceYesFields');
       const noFields = document.getElementById('sourceNoFields');
@@ -485,87 +475,42 @@
         return;
       }
 
-      const apiKeyInput = document.getElementById('apiKey');
-      const apiKey = apiKeyInput.value.trim();
-      
-      const opponentClaim = document.getElementById('opponentClaim').value;
-      const steelman = document.getElementById('steelman').value;
-      const critique = document.getElementById('critique').value;
-      const critiqueWhy = document.getElementById('critiqueWhy').value;
-      const alternative = document.getElementById('alternative').value;
-      const alternativeWhy = document.getElementById('alternativeWhy').value;
-
       const outputDiv = document.getElementById('output');
       const submitBtn = document.getElementById('submitBtn');
 
-      if (!apiKey) {
-        alert('Please enter your Gemini API key.');
-        return;
-      }
-
-      localStorage.setItem('gemini_key', apiKey);
+      // Package field inputs to send to the backend
+      const payload = {
+        opponentClaim: document.getElementById('opponentClaim').value,
+        steelman: document.getElementById('steelman').value,
+        critique: document.getElementById('critique').value,
+        critiqueWhy: document.getElementById('critiqueWhy').value,
+        alternative: document.getElementById('alternative').value,
+        alternativeWhy: document.getElementById('alternativeWhy').value
+      };
 
       submitBtn.disabled = true;
       outputDiv.classList.remove('hidden');
       outputDiv.innerHTML = '<em>Analyzing argument structure...</em>';
 
-      const promptText = `You are a helpful, encouraging writing and logic coach evaluating a student's argument breakdown.
-
-Use clear, simple language appropriate for a middle or high school reader. Avoid overly dense academic jargon (if you mention a logical fallacy, explain it simply without using Latin terms).
-
-Analyze the student's six core reasoning inputs:
-- Field 1 (Opponent's Claim): ${opponentClaim}
-- Field 2 (Steelman): ${steelman}
-- Field 3a (Flaw in Opponent's Claim): ${critique}
-- Field 3b (Why that flaw is a problem): ${critiqueWhy}
-- Field 4a (Alternative Solution): ${alternative}
-- Field 4b (Why alternative is better): ${alternativeWhy}
-
-You MUST follow this exact formatting structure for your response every single time:
-
-### 1. Opponent's Claim & Steelman Check
-* **Engagement:** [Is Field 2 a fair and strong representation of Field 1? Answer in 1-2 sentences.]
-* **Feedback:** 
-  - **What's working / What's wrong:** [Explain clearly]
-  - **Why it matters:** [Explain why steelmanning fairly builds stronger arguments]
-  - **How to fix it:** [Provide a concrete example of how to improve or polish it]
-
-### 2. Critique & Logic Check (Fields 3a & 3b)
-* **Direct Hit or Sidestep?:** [Does Field 3a directly address the point in Fields 1 & 2, or does it shift topics/commit a fallacy like a Strawman or Red Herring? Does Field 3b explain a REAL problem or consequence?]
-* **Feedback:**
-  - **What's working / What's wrong:** [Explain clearly]
-  - **Why it matters:** [Explain why clearly proving WHY an opponent's flaw matters makes an argument convincing]
-  - **How to fix it:** [Provide a concrete example or sample sentence showing how to directly connect the flaw to its real consequence]
-
-### 3. Alternative Solution Check (Fields 4a & 4b)
-* **Is it a Real Alternative?:** [Does Field 4a offer a constructive solution that fixes the problem in 3a/3b? Does 4b explain why it's truly superior?]
-* **Feedback:**
-  - **What's working / What's wrong:** [Explain clearly]
-  - **Why it matters:** [Explain why proposing a practical, superior fix completes a strong counter-argument]
-  - **How to fix it:** [Provide a concrete example of what a stronger alternative and explanation would look like]`;
-
-      const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key=${apiKey}`;
-
       try {
-        const response = await fetch(url, {
+        const response = await fetch('/api/evaluate', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json'
           },
-          body: JSON.stringify({
-            contents: [{
-              parts: [{ text: promptText }]
-            }]
-          })
+          body: JSON.stringify(payload)
         });
 
-        const data = await response.json();
-        if (data.error) {
-          outputDiv.innerHTML = '<strong>Error:</strong> ' + data.error.message;
-        } else {
-          const feedback = data.candidates[0].content.parts[0].text;
-          outputDiv.innerHTML = marked.parse(feedback);
+        if (!response.ok) {
+          throw new Error(`Server returned ${response.status}: ${response.statusText}`);
         }
+
+        const data = await response.json();
+        
+        // Handle response from server (supports raw text string, parsed markdown, or json property)
+        const feedback = data.result || data.evaluation || data.feedback || data;
+        outputDiv.innerHTML = marked.parse(feedback);
+
       } catch (err) {
         outputDiv.innerHTML = '<strong>Request failed:</strong> ' + err.message;
       } finally {

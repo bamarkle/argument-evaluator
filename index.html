@@ -74,11 +74,14 @@
       display: none;
     }
 
-    button {
+    .button-group {
+      display: flex;
+      gap: 15px;
       margin-top: 25px;
+    }
+
+    button {
       padding: 12px 24px;
-      background: #0066cc;
-      color: #fff;
       font-size: 15px;
       font-weight: 600;
       border: none;
@@ -86,11 +89,21 @@
       cursor: pointer;
     }
 
+    #submitBtn {
+      background: #0066cc;
+      color: #fff;
+    }
+
+    #compileBtn {
+      background: #2b6cb0;
+      color: #fff;
+    }
+
     button:disabled {
       background: #999;
     }
 
-    #output {
+    #output, #paragraphOutput {
       margin-top: 30px;
       padding: 20px;
       background: #f8f9fa;
@@ -98,22 +111,26 @@
       border-radius: 6px;
     }
 
-    #output h1, #output h2, #output h3 {
+    #output h1, #output h2, #output h3, #paragraphOutput h3 {
       margin-top: 0;
       color: #1a202c;
     }
 
-    #output p {
-      margin-bottom: 12px;
+    #compiledParagraph {
+      font-size: 16px;
+      line-height: 1.8;
+      background: #fff;
+      padding: 15px;
+      border: 1px solid #cbd5e0;
+      border-radius: 4px;
     }
 
-    #output ul, #output ol {
-      padding-left: 20px;
-    }
-
-    #output li {
-      margin-bottom: 6px;
-    }
+    /* Accessible ADA High-Contrast Color Palette */
+    .hl-f1 { background-color: #ffebe9; color: #7d0000; padding: 2px 5px; border-radius: 3px; } /* Field 1 (Red Tint) */
+    .hl-f2 { background-color: #ebf8ff; color: #004b7a; padding: 2px 5px; border-radius: 3px; } /* Field 2 (Blue Tint) */
+    .hl-f3 { background-color: #fffaf0; color: #7b4200; padding: 2px 5px; border-radius: 3px; } /* Field 3 (Orange Tint) */
+    .hl-f4 { background-color: #f0fff4; color: #005a2b; padding: 2px 5px; border-radius: 3px; } /* Field 4 (Green Tint) */
+    .hl-f5 { background-color: #faf5ff; color: #4a007a; padding: 2px 5px; border-radius: 3px; } /* Field 5 Research (Purple Tint) */
   </style>
 </head>
 <body>
@@ -159,7 +176,11 @@
       <label for="supportingResearch">Supporting Research for Alternative Idea:</label>
       <textarea id="supportingResearch" placeholder="Summarize or quote evidence supporting your idea..."></textarea>
 
-      <label>Have you used this source before in this paper?</label>
+      <label class="checkbox-label">
+        <input type="checkbox" id="isResearchDirectQuote"> Is this supporting evidence a direct quote?
+      </label>
+
+      <label style="margin-top: 15px;">Have you used this source before in this paper?</label>
       <div class="radio-group">
         <label class="radio-label">
           <input type="radio" name="usedSourceBefore" value="yes"> Yes
@@ -181,24 +202,30 @@
         <input type="text" id="supportingAuthorFullName" placeholder="e.g., Dr. Sarah Johnson" />
 
         <label for="supportingAuthorCredentials">Author's Credentials:</label>
-        <input type="text" id="supportingAuthorCredentials" placeholder="e.g., A professor at Penn State University" />
+        <input type="text" id="supportingAuthorCredentials" placeholder="e.g., a professor at Penn State University" />
       </div>
     </div>
   </div>
 
-  <button id="submitBtn" onclick="evaluateArgument()">Evaluate Logic</button>
+  <div class="button-group">
+    <button id="submitBtn" onclick="evaluateArgument()">Evaluate Logic</button>
+    <button id="compileBtn" onclick="compileParagraph()">Compile Paragraph</button>
+  </div>
+
+  <div id="paragraphOutput" class="hidden">
+    <h3>Compiled Paragraph</h3>
+    <div id="compiledParagraph"></div>
+  </div>
 
   <div id="output">Evaluation results will appear here...</div>
 
   <script>
     document.addEventListener('DOMContentLoaded', () => {
-      // Load saved API key
       const savedKey = localStorage.getItem('gemini_key');
       if (savedKey) {
         document.getElementById('apiKey').value = savedKey;
       }
 
-      // Handle dynamic visibility for source usage (Yes / No)
       const radioButtons = document.querySelectorAll('input[name="usedSourceBefore"]');
       const yesFields = document.getElementById('sourceYesFields');
       const noFields = document.getElementById('sourceNoFields');
@@ -216,11 +243,58 @@
       });
     });
 
+    function compileParagraph() {
+      const opponentAuthor = document.getElementById('opponentAuthor').value.trim() || "The opponent";
+      let opponentClaim = document.getElementById('opponentClaim').value.trim();
+      const isDirectQuote = document.getElementById('isDirectQuote').checked;
+      const steelman = document.getElementById('steelman').value.trim();
+      const critique = document.getElementById('critique').value.trim();
+      const betterIdea = document.getElementById('betterIdea').value.trim();
+      
+      let supportingResearch = document.getElementById('supportingResearch').value.trim();
+      const isResearchDirectQuote = document.getElementById('isResearchDirectQuote').checked;
+      const usedSourceBefore = document.querySelector('input[name="usedSourceBefore"]:checked')?.value;
+      
+      const authorLastName = document.getElementById('supportingAuthorLastName').value.trim();
+      const authorFullName = document.getElementById('supportingAuthorFullName').value.trim();
+      const authorCreds = document.getElementById('supportingAuthorCredentials').value.trim();
+
+      if (isDirectQuote && opponentClaim) {
+        opponentClaim = `"${opponentClaim}"`;
+      }
+      if (isResearchDirectQuote && supportingResearch) {
+        supportingResearch = `"${supportingResearch}"`;
+      }
+
+      let authorAttribution = "";
+      if (usedSourceBefore === 'yes' && authorLastName) {
+        authorAttribution = authorLastName;
+      } else if (usedSourceBefore === 'no' && authorFullName) {
+        authorAttribution = authorCreds ? `${authorFullName}, ${authorCreds},` : authorFullName;
+      } else {
+        authorAttribution = "researchers";
+      }
+
+      const htmlParagraph = `
+        <span class="hl-f1">${opponentAuthor} argues that ${opponentClaim || "[Field 1]"}</span>. 
+        <span class="hl-f2">This is a reasonable argument because ${steelman || "[Field 2]"}</span>. 
+        <span class="hl-f3">However, ${critique || "[Field 3]"}</span>. 
+        <span class="hl-f4">An alternative might be ${betterIdea || "[Field 4]"}</span>. 
+        <span class="hl-f5">According to ${authorAttribution}, ${supportingResearch || "[Supporting Research]"}</span>.
+      `;
+
+      const paragraphContainer = document.getElementById('paragraphOutput');
+      const paragraphBox = document.getElementById('compiledParagraph');
+      
+      paragraphBox.innerHTML = htmlParagraph;
+      paragraphContainer.classList.remove('hidden');
+      paragraphContainer.scrollIntoView({ behavior: 'smooth' });
+    }
+
     async function evaluateArgument() {
       const apiKeyInput = document.getElementById('apiKey');
       const apiKey = apiKeyInput.value.trim();
       
-      // Values used for AI Evaluation
       const opponentClaim = document.getElementById('opponentClaim').value;
       const steelman = document.getElementById('steelman').value;
       const critique = document.getElementById('critique').value;

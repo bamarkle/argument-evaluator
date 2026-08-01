@@ -4,22 +4,94 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Argument Logic Evaluator</title>
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
   <style>
-    body { font-family: system-ui, sans-serif; max-width: 700px; margin: 40px auto; padding: 0 20px; line-height: 1.5; }
-    label { font-weight: bold; display: block; margin-top: 15px; }
-    textarea, input { width: 100%; box-sizing: border-box; margin-top: 5px; padding: 10px; font-family: inherit; }
-    textarea { height: 80px; }
-    button { margin-top: 20px; padding: 12px 20px; background: #0066cc; color: white; border: none; border-radius: 4px; cursor: pointer; }
-    button:disabled { background: #ccc; }
-    #output { margin-top: 30px; padding: 15px; background: #f4f4f4; border-radius: 4px; white-space: pre-wrap; }
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      max-width: 700px;
+      margin: 40px auto;
+      padding: 0 20px;
+      line-height: 1.6;
+      color: #222;
+    }
+
+    label {
+      font-weight: 600;
+      display: block;
+      margin-top: 18px;
+    }
+
+    textarea, input {
+      width: 100%;
+      box-sizing: border-box;
+      margin-top: 6px;
+      padding: 10px;
+      font-family: inherit;
+      font-size: 14px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+    }
+
+    textarea {
+      height: 90px;
+      resize: vertical;
+    }
+
+    button {
+      margin-top: 20px;
+      padding: 12px 24px;
+      background: #0066cc;
+      color: #fff;
+      font-size: 15px;
+      font-weight: 600;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+
+    button:disabled {
+      background: #999;
+    }
+
+    #output {
+      margin-top: 30px;
+      padding: 20px;
+      background: #f8f9fa;
+      border: 1px solid #e2e8f0;
+      border-radius: 6px;
+    }
+
+    #output h1, #output h2, #output h3 {
+      margin-top: 0;
+      color: #1a202c;
+    }
+
+    #output p {
+      margin-bottom: 12px;
+    }
+
+    #output ul, #output ol {
+      padding-left: 20px;
+    }
+
+    #output li {
+      margin-bottom: 6px;
+    }
+
+    #output blockquote {
+      margin: 12px 0;
+      padding-left: 12px;
+      border-left: 4px solid #0066cc;
+      color: #4a5568;
+    }
   </style>
 </head>
 <body>
 
   <h1>Argument Logic Evaluator</h1>
 
-  <label for="apiKey">Gemini API Key (faor testing):</label>
-  <input type="password" id="apiKey" placeholder="sk-..." />
+  <label for="apiKey">Gemini API Key (saved locally):</label>
+  <input type="password" id="apiKey" placeholder="AIzaSy..." />
 
   <label for="opponentClaim">1. What argument is your opponent making?</label>
   <textarea id="opponentClaim"></textarea>
@@ -37,25 +109,35 @@
 
   <div id="output">Evaluation results will appear here...</div>
 
-<script>
-  async function evaluateArgument() {
-    const apiKey = document.getElementById('apiKey').value.trim();
-    const opponentClaim = document.getElementById('opponentClaim').value;
-    const steelman = document.getElementById('steelman').value;
-    const critique = document.getElementById('critique').value;
-    const betterIdea = document.getElementById('betterIdea').value;
-    const outputDiv = document.getElementById('output');
-    const submitBtn = document.getElementById('submitBtn');
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const savedKey = localStorage.getItem('gemini_key');
+      if (savedKey) {
+        document.getElementById('apiKey').value = savedKey;
+      }
+    });
 
-    if (!apiKey) {
-      alert('Please enter your Gemini API key.');
-      return;
-    }
+    async function evaluateArgument() {
+      const apiKeyInput = document.getElementById('apiKey');
+      const apiKey = apiKeyInput.value.trim();
+      const opponentClaim = document.getElementById('opponentClaim').value;
+      const steelman = document.getElementById('steelman').value;
+      const critique = document.getElementById('critique').value;
+      const betterIdea = document.getElementById('betterIdea').value;
+      const outputDiv = document.getElementById('output');
+      const submitBtn = document.getElementById('submitBtn');
 
-    submitBtn.disabled = true;
-    outputDiv.innerText = 'Analyzing argument structure...';
+      if (!apiKey) {
+        alert('Please enter your Gemini API key.');
+        return;
+      }
 
-    const promptText = `You are an expert logic and rhetoric evaluator. 
+      localStorage.setItem('gemini_key', apiKey);
+
+      submitBtn.disabled = true;
+      outputDiv.innerHTML = '<em>Analyzing argument structure...</em>';
+
+      const promptText = `You are an expert logic and rhetoric evaluator. 
 Analyze the user's submission across four distinct fields:
 - Field 1 (Opponent's Claim): ${opponentClaim}
 - Field 2 (Steelman): ${steelman}
@@ -69,35 +151,34 @@ Evaluate whether:
 
 Provide concise, direct feedback targeting logic integrity and fallacy detection.`;
 
-    // Updated to gemini-3.6-flash
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key=${apiKey}`;
+      const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key=${apiKey}`;
 
-    try {
-      const response = await fetch(url, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          contents: [{
-            parts: [{ text: promptText }]
-          }]
-        })
-      });
+      try {
+        const response = await fetch(url, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            contents: [{
+              parts: [{ text: promptText }]
+            }]
+          })
+        });
 
-      const data = await response.json();
-      if (data.error) {
-        outputDiv.innerText = 'Error: ' + data.error.message;
-      } else {
-        const feedback = data.candidates[0].content.parts[0].text;
-        outputDiv.innerText = feedback;
+        const data = await response.json();
+        if (data.error) {
+          outputDiv.innerHTML = '<strong>Error:</strong> ' + data.error.message;
+        } else {
+          const feedback = data.candidates[0].content.parts[0].text;
+          outputDiv.innerHTML = marked.parse(feedback);
+        }
+      } catch (err) {
+        outputDiv.innerHTML = '<strong>Request failed:</strong> ' + err.message;
+      } finally {
+        submitBtn.disabled = false;
       }
-    } catch (err) {
-      outputDiv.innerText = 'Request failed: ' + err.message;
-    } finally {
-      submitBtn.disabled = false;
     }
-  }
-</script>
+  </script>
 </body>
 </html>

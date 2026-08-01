@@ -8,7 +8,7 @@
   <style>
     body {
       font-family: system-ui, -apple-system, sans-serif;
-      max-width: 700px;
+      max-width: 720px;
       margin: 40px auto;
       padding: 0 20px;
       line-height: 1.6;
@@ -23,12 +23,14 @@
     }
 
     /* Form Field Group Colors Matched to Compiled Highlights */
-    .group-f1 { background-color: #ffebe9; border-color: #fca5a5; } /* Red Tint */
-    .group-f2 { background-color: #ebf8ff; border-color: #93c5fd; } /* Blue Tint */
-    .group-f3 { background-color: #fffaf0; border-color: #fde047; } /* Orange/Yellow Tint */
-    .group-f4 { background-color: #f0fff4; border-color: #86efac; } /* Green Tint */
-    .group-f5 { background-color: #faf5ff; border-color: #d8b4fe; } /* Purple Tint */
-    .group-f6 { background-color: #f1f5f9; border-color: #cbd5e1; } /* Slate Tint */
+    .group-f1  { background-color: #ffebe9; border-color: #fca5a5; } /* Red Tint */
+    .group-f2  { background-color: #ebf8ff; border-color: #93c5fd; } /* Blue Tint */
+    .group-f3a { background-color: #fffaf0; border-color: #fde047; } /* Light Orange Tint */
+    .group-f3b { background-color: #fff4e6; border-color: #f97316; } /* Darker Orange Tint */
+    .group-f4a { background-color: #f0fff4; border-color: #86efac; } /* Light Green Tint */
+    .group-f4b { background-color: #dcfce7; border-color: #22c55e; } /* Darker Green Tint */
+    .group-f5  { background-color: #faf5ff; border-color: #d8b4fe; } /* Purple Tint */
+    .group-f6  { background-color: #f1f5f9; border-color: #cbd5e1; } /* Slate Tint */
 
     label {
       font-weight: 600;
@@ -72,7 +74,7 @@
     }
 
     textarea {
-      height: 80px;
+      height: 75px;
       resize: vertical;
     }
 
@@ -137,13 +139,15 @@
       border-radius: 6px;
     }
 
-    /* Accessible ADA High-Contrast Color Palette */
-    .hl-f1 { background-color: #ffebe9; color: #7d0000; padding: 2px 5px; border-radius: 3px; }
-    .hl-f2 { background-color: #ebf8ff; color: #004b7a; padding: 2px 5px; border-radius: 3px; }
-    .hl-f3 { background-color: #fffaf0; color: #7b4200; padding: 2px 5px; border-radius: 3px; }
-    .hl-f4 { background-color: #f0fff4; color: #005a2b; padding: 2px 5px; border-radius: 3px; }
-    .hl-f5 { background-color: #faf5ff; color: #4a007a; padding: 2px 5px; border-radius: 3px; }
-    .hl-f6 { background-color: #f1f5f9; color: #1e293b; padding: 2px 5px; border-radius: 3px; }
+    /* Accessible High-Contrast Color Highlights */
+    .hl-f1  { background-color: #ffebe9; color: #7d0000; padding: 2px 5px; border-radius: 3px; }
+    .hl-f2  { background-color: #ebf8ff; color: #004b7a; padding: 2px 5px; border-radius: 3px; }
+    .hl-f3a { background-color: #fffaf0; color: #7b4200; padding: 2px 5px; border-radius: 3px; }
+    .hl-f3b { background-color: #fff4e6; color: #8a3b00; padding: 2px 5px; border-radius: 3px; }
+    .hl-f4a { background-color: #f0fff4; color: #005a2b; padding: 2px 5px; border-radius: 3px; }
+    .hl-f4b { background-color: #dcfce7; color: #004d20; padding: 2px 5px; border-radius: 3px; }
+    .hl-f5  { background-color: #faf5ff; color: #4a007a; padding: 2px 5px; border-radius: 3px; }
+    .hl-f6  { background-color: #f1f5f9; color: #1e293b; padding: 2px 5px; border-radius: 3px; }
   </style>
 </head>
 <body>
@@ -161,7 +165,7 @@
     <textarea id="opponentClaim" placeholder="e.g., making schools start later will allow students to get much needed rest"></textarea>
 
     <label class="checkbox-label">
-      <input type="checkbox" id="isDirectQuote"> Check this if this is a direct quote from your opponent.
+      <input type="checkbox" id="isDirectQuote"> Is this a direct quote from your opponent?
     </label>
 
     <div class="sub-field">
@@ -176,16 +180,28 @@
     <textarea id="steelman" placeholder="e.g., students who get more sleep perform better academically and are safer drivers"></textarea>
   </div>
 
-  <!-- FIELD 3 (Orange) -->
-  <div class="field-group group-f3">
-    <label for="critique">3. Where do you think their argument is flawed?</label>
+  <!-- FIELD 3a (Light Orange) -->
+  <div class="field-group group-f3a">
+    <label for="critique">3a. Where do you think their argument is flawed or missing something?</label>
     <textarea id="critique" placeholder="e.g., they ignore the practical schedule conflicts for working parents"></textarea>
   </div>
 
-  <!-- FIELD 4 GROUP (Green) -->
-  <div class="field-group group-f4">
-    <label for="betterIdea">4. Why is your alternative idea better?</label>
-    <textarea id="betterIdea" placeholder="e.g., offering optional zero-period study halls rather than shifting the entire district clock"></textarea>
+  <!-- FIELD 3b (Darker Orange) -->
+  <div class="field-group group-f3b">
+    <label for="critiqueWhy">3b. Why is that flaw a serious problem?</label>
+    <textarea id="critiqueWhy" placeholder="e.g., working parents won't have an adult at home to help younger kids get ready or travel safely to school"></textarea>
+  </div>
+
+  <!-- FIELD 4a (Light Green) -->
+  <div class="field-group group-f4a">
+    <label for="alternative">4a. What alternative solution or idea addresses this issue?</label>
+    <textarea id="alternative" placeholder="e.g., offering optional zero-period study halls or flexible start times rather than shifting the whole district clock"></textarea>
+  </div>
+
+  <!-- FIELD 4b (Darker Green) -->
+  <div class="field-group group-f4b">
+    <label for="alternativeWhy">4b. Why is your solution better?</label>
+    <textarea id="alternativeWhy" placeholder="e.g., it gives sleep-deprived students flexibility without disrupting work routines for families"></textarea>
   </div>
 
   <!-- FIELD 5 GROUP - Supporting Research (Purple) -->
@@ -194,7 +210,7 @@
     <textarea id="supportingResearch" placeholder="Summarize or quote evidence supporting your idea..."></textarea>
 
     <label class="checkbox-label">
-      <input type="checkbox" id="isResearchDirectQuote"> Check this if this is a direct quote from your research.
+      <input type="checkbox" id="isResearchDirectQuote"> Is this supporting evidence a direct quote?
     </label>
 
     <label style="margin-top: 12px;">Have you used this source before in this paper?</label>
@@ -226,7 +242,7 @@
   <!-- FIELD 6 - Conclusion (Slate) -->
   <div class="field-group group-f6">
     <label for="conclusion">6. Conclusion / Final Takeaway:</label>
-    <textarea id="conclusion" placeholder="e.g., flexible options solve student sleep needs without disrupting family routines"></textarea>
+    <textarea id="conclusion" placeholder="e.g., flexible options solve student sleep needs without creating new headaches for working families"></textarea>
   </div>
 
   <div class="button-group">
@@ -265,12 +281,11 @@
       });
     });
 
-    // Clean leading duplicate transition words typed by students
     function cleanInputText(text) {
       if (!text) return "";
       let cleaned = text.trim();
-      // Remove starting capitalization if sentence is plugged into mid-sentence template
-      cleaned = cleaned.replace(/^(that|they argue that|this is because|however|but)\s+/i, '');
+      // Strips out leading duplicate transition words students often type
+      cleaned = cleaned.replace(/^(that|they argue that|this is because|however|but|because)\s+/i, '');
       return cleaned;
     }
 
@@ -281,7 +296,10 @@
       
       let steelman = cleanInputText(document.getElementById('steelman').value);
       let critique = cleanInputText(document.getElementById('critique').value);
-      let betterIdea = cleanInputText(document.getElementById('betterIdea').value);
+      let critiqueWhy = cleanInputText(document.getElementById('critiqueWhy').value);
+      let alternative = cleanInputText(document.getElementById('alternative').value);
+      let alternativeWhy = cleanInputText(document.getElementById('alternativeWhy').value);
+      
       let supportingResearch = cleanInputText(document.getElementById('supportingResearch').value);
       let conclusion = cleanInputText(document.getElementById('conclusion').value);
 
@@ -311,8 +329,10 @@
       const htmlParagraph = `
         <span class="hl-f1">${opponentAuthor} argues that ${opponentClaim || "[Field 1]"}</span>. 
         <span class="hl-f2">This is a reasonable argument because ${steelman || "[Field 2]"}</span>. 
-        <span class="hl-f3">However, ${critique || "[Field 3]"}</span>. 
-        <span class="hl-f4">An alternative might be ${betterIdea || "[Field 4]"}</span>. 
+        <span class="hl-f3a">However, ${critique || "[Field 3a]"}</span>. 
+        <span class="hl-f3b">This is a problem because ${critiqueWhy || "[Field 3b]"}</span>. 
+        <span class="hl-f4a">An alternative solution is ${alternative || "[Field 4a]"}</span>. 
+        <span class="hl-f4b">This solution is better because ${alternativeWhy || "[Field 4b]"}</span>. 
         <span class="hl-f5">According to ${authorAttribution}, ${supportingResearch || "[Supporting Research]"}</span>. 
         <span class="hl-f6">Ultimately, ${conclusion || "[Conclusion]"}</span>.
       `;
@@ -332,7 +352,9 @@
       const opponentClaim = document.getElementById('opponentClaim').value;
       const steelman = document.getElementById('steelman').value;
       const critique = document.getElementById('critique').value;
-      const betterIdea = document.getElementById('betterIdea').value;
+      const critiqueWhy = document.getElementById('critiqueWhy').value;
+      const alternative = document.getElementById('alternative').value;
+      const alternativeWhy = document.getElementById('alternativeWhy').value;
 
       const outputDiv = document.getElementById('output');
       const submitBtn = document.getElementById('submitBtn');
@@ -351,11 +373,13 @@
 
 Use clear, simple language appropriate for a middle or high school reader. Avoid overly dense academic jargon (if you mention a logical fallacy, explain it simply without using Latin terms).
 
-Analyze the student's four inputs:
+Analyze the student's six core reasoning inputs:
 - Field 1 (Opponent's Claim): ${opponentClaim}
 - Field 2 (Steelman): ${steelman}
-- Field 3 (Critique): ${critique}
-- Field 4 (Alternative Idea): ${betterIdea}
+- Field 3a (Flaw in Opponent's Claim): ${critique}
+- Field 3b (Why that flaw is a problem): ${critiqueWhy}
+- Field 4a (Alternative Solution): ${alternative}
+- Field 4b (Why alternative is better): ${alternativeWhy}
 
 You MUST follow this exact formatting structure for your response every single time:
 
@@ -366,19 +390,19 @@ You MUST follow this exact formatting structure for your response every single t
   - **Why it matters:** [Explain why steelmanning fairly builds stronger arguments]
   - **How to fix it:** [Provide a concrete example of how to improve or polish it]
 
-### 2. Critique & Logic Check
-* **Direct Hit or Sidestep?:** [Does Field 3 directly address the point in Fields 1 & 2, or does it shift topics/commit a fallacy like a Strawman or Red Herring?]
+### 2. Critique & Logic Check (Fields 3a & 3b)
+* **Direct Hit or Sidestep?:** [Does Field 3a directly address the point in Fields 1 & 2, or does it shift topics/commit a fallacy like a Strawman or Red Herring? Does Field 3b explain a REAL problem or consequence?]
 * **Feedback:**
   - **What's working / What's wrong:** [Explain clearly]
-  - **Why it matters:** [Explain why sidestepping or using a weak critique weakens their position]
-  - **How to fix it:** [Provide a concrete example or sample sentence showing how to directly attack the opponent's logic]
+  - **Why it matters:** [Explain why clearly proving WHY an opponent's flaw matters makes an argument convincing]
+  - **How to fix it:** [Provide a concrete example or sample sentence showing how to directly connect the flaw to its real consequence]
 
-### 3. Alternative Idea Check
-* **Is it a Real Alternative?:** [Does Field 4 offer a constructive solution or new idea that addresses the flaw in Field 3, or does it just repeat Field 3 / defend keeping things the same?]
+### 3. Alternative Solution Check (Fields 4a & 4b)
+* **Is it a Real Alternative?:** [Does Field 4a offer a constructive solution that fixes the problem in 3a/3b? Does 4b explain why it's truly superior?]
 * **Feedback:**
   - **What's working / What's wrong:** [Explain clearly]
-  - **Why it matters:** [Explain why a strong counter-idea needs to solve the problem]
-  - **How to fix it:** [Provide a concrete example of what a better alternative idea would look like here]`;
+  - **Why it matters:** [Explain why proposing a practical, superior fix completes a strong counter-argument]
+  - **How to fix it:** [Provide a concrete example of what a stronger alternative and explanation would look like]`;
 
       const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key=${apiKey}`;
 

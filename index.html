@@ -15,13 +15,34 @@
       color: #222;
     }
 
+    .field-group {
+      margin-top: 20px;
+      padding-bottom: 10px;
+    }
+
     label {
       font-weight: 600;
       display: block;
-      margin-top: 18px;
+      margin-top: 12px;
     }
 
-    textarea, input {
+    .checkbox-label {
+      font-weight: normal;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: 8px;
+      cursor: pointer;
+      font-size: 14px;
+      color: #4a5568;
+    }
+
+    .checkbox-label input {
+      width: auto;
+      margin: 0;
+    }
+
+    textarea, input[type="text"], input[type="password"] {
       width: 100%;
       box-sizing: border-box;
       margin-top: 6px;
@@ -37,8 +58,14 @@
       resize: vertical;
     }
 
+    .sub-field {
+      margin-top: 10px;
+      padding-left: 15px;
+      border-left: 3px solid #e2e8f0;
+    }
+
     button {
-      margin-top: 20px;
+      margin-top: 25px;
       padding: 12px 24px;
       background: #0066cc;
       color: #fff;
@@ -77,13 +104,6 @@
     #output li {
       margin-bottom: 6px;
     }
-
-    #output blockquote {
-      margin: 12px 0;
-      padding-left: 12px;
-      border-left: 4px solid #0066cc;
-      color: #4a5568;
-    }
   </style>
 </head>
 <body>
@@ -93,17 +113,46 @@
   <label for="apiKey">Gemini API Key (saved locally):</label>
   <input type="password" id="apiKey" placeholder="AIzaSy..." />
 
-  <label for="opponentClaim">1. What argument is your opponent making?</label>
-  <textarea id="opponentClaim"></textarea>
+  <!-- FIELD 1 GROUP -->
+  <div class="field-group">
+    <label for="opponentClaim">1. What argument is your opponent making?</label>
+    <textarea id="opponentClaim"></textarea>
 
-  <label for="steelman">2. Why is their argument strong or reasonable?</label>
-  <textarea id="steelman"></textarea>
+    <label class="checkbox-label">
+      <input type="checkbox" id="isDirectQuote"> Is this a direct quote from your opponent?
+    </label>
 
-  <label for="critique">3. Where do you think their argument is flawed?</label>
-  <textarea id="critique"></textarea>
+    <div class="sub-field">
+      <label for="opponentAuthor">Opponent's / Author's Last Name:</label>
+      <input type="text" id="opponentAuthor" placeholder="e.g., Smith" />
+    </div>
+  </div>
 
-  <label for="betterIdea">4. Why is your alternative idea better?</label>
-  <textarea id="betterIdea"></textarea>
+  <!-- FIELD 2 -->
+  <div class="field-group">
+    <label for="steelman">2. Why is their argument strong or reasonable?</label>
+    <textarea id="steelman"></textarea>
+  </div>
+
+  <!-- FIELD 3 -->
+  <div class="field-group">
+    <label for="critique">3. Where do you think their argument is flawed?</label>
+    <textarea id="critique"></textarea>
+  </div>
+
+  <!-- FIELD 4 GROUP -->
+  <div class="field-group">
+    <label for="betterIdea">4. Why is your alternative idea better?</label>
+    <textarea id="betterIdea"></textarea>
+
+    <div class="sub-field">
+      <label for="supportingResearch">Supporting Research for Alternative Idea:</label>
+      <textarea id="supportingResearch" placeholder="Summarize or quote evidence supporting your idea..."></textarea>
+
+      <label for="supportingAuthor">Supporting Research Author's Last Name:</label>
+      <input type="text" id="supportingAuthor" placeholder="e.g., Johnson" />
+    </div>
+  </div>
 
   <button id="submitBtn" onclick="evaluateArgument()">Evaluate Logic</button>
 
@@ -120,10 +169,13 @@
     async function evaluateArgument() {
       const apiKeyInput = document.getElementById('apiKey');
       const apiKey = apiKeyInput.value.trim();
+      
+      // Values used for AI Evaluation
       const opponentClaim = document.getElementById('opponentClaim').value;
       const steelman = document.getElementById('steelman').value;
       const critique = document.getElementById('critique').value;
       const betterIdea = document.getElementById('betterIdea').value;
+
       const outputDiv = document.getElementById('output');
       const submitBtn = document.getElementById('submitBtn');
 
@@ -137,7 +189,7 @@
       submitBtn.disabled = true;
       outputDiv.innerHTML = '<em>Analyzing argument structure...</em>';
 
-const promptText = `You are a helpful, encouraging writing and logic coach evaluating a student's argument breakdown.
+      const promptText = `You are a helpful, encouraging writing and logic coach evaluating a student's argument breakdown.
 
 Use clear, simple language appropriate for a middle or high school reader. Avoid overly dense academic jargon (if you mention a logical fallacy, explain it simply without using Latin terms).
 

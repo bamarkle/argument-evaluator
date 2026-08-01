@@ -20,6 +20,7 @@
       padding: 15px;
       border-radius: 6px;
       border: 1px solid transparent;
+      transition: border-color 0.2s ease;
     }
 
     /* Form Field Group Colors Matched to Compiled Highlights */
@@ -78,6 +79,12 @@
       resize: vertical;
     }
 
+    /* Validation error state for missing fields */
+    .input-error {
+      border: 2px solid #dc2626 !important;
+      background-color: #fef2f2 !important;
+    }
+
     .sub-field {
       margin-top: 10px;
       padding-left: 15px;
@@ -90,12 +97,13 @@
 
     .button-group {
       display: flex;
-      gap: 15px;
+      gap: 12px;
       margin-top: 25px;
+      flex-wrap: wrap;
     }
 
     button {
-      padding: 12px 24px;
+      padding: 12px 20px;
       font-size: 15px;
       font-weight: 600;
       border: none;
@@ -113,6 +121,18 @@
       color: #fff;
     }
 
+    #resetBtn {
+      background: #e2e8f0;
+      color: #334155;
+    }
+
+    #copyBtn {
+      background: #475569;
+      color: #fff;
+      font-size: 13px;
+      padding: 6px 12px;
+    }
+
     button:disabled {
       background: #999;
     }
@@ -128,6 +148,16 @@
     #output h1, #output h2, #output h3, #paragraphOutput h3 {
       margin-top: 0;
       color: #1a202c;
+    }
+
+    .disclaimer-box {
+      background-color: #fffbeeb;
+      border-left: 4px solid #f59e0b;
+      padding: 12px 15px;
+      margin-bottom: 15px;
+      font-size: 13px;
+      color: #78350f;
+      border-radius: 0 4px 4px 0;
     }
 
     #compiledParagraph {
@@ -214,7 +244,7 @@
     </label>
 
     <label style="margin-top: 12px;">Have you used this source before in this paper?</label>
-    <div class="radio-group">
+    <div class="radio-group" id="radioGroupContainer">
       <label class="radio-label">
         <input type="radio" name="usedSourceBefore" value="yes"> Yes
       </label>
@@ -248,14 +278,23 @@
   <div class="button-group">
     <button id="submitBtn" onclick="evaluateArgument()">Evaluate Logic</button>
     <button id="compileBtn" onclick="compileParagraph()">Compile Paragraph</button>
+    <button id="resetBtn" onclick="resetForm()">Reset Form</button>
   </div>
 
   <div id="paragraphOutput" class="hidden">
-    <h3>Compiled Paragraph</h3>
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+      <h3 style="margin: 0;">Compiled Paragraph</h3>
+      <button id="copyBtn" onclick="copyCompiledText()">Copy Text</button>
+    </div>
+
+    <div class="disclaimer-box">
+      <strong>Important Note:</strong> This compiled text exists ONLY to show how your logic links together. It is an outline draft, not a finished paper. Do not copy and paste this into an essay without significant revision, editing, and smoothing out transitions.
+    </div>
+
     <div id="compiledParagraph"></div>
   </div>
 
-  <div id="output">Evaluation results will appear here...</div>
+  <div id="output" class="hidden"></div>
 
   <script>
     document.addEventListener('DOMContentLoaded', () => {
@@ -284,12 +323,71 @@
     function cleanInputText(text) {
       if (!text) return "";
       let cleaned = text.trim();
-      // Strips out leading duplicate transition words students often type
       cleaned = cleaned.replace(/^(that|they argue that|this is because|however|but|because)\s+/i, '');
       return cleaned;
     }
 
+    function clearValidationErrors() {
+      const elements = document.querySelectorAll('.input-error');
+      elements.forEach(el => el.classList.remove('input-error'));
+    }
+
+    function validateRequiredFields() {
+      clearValidationErrors();
+      let isValid = true;
+
+      const requiredIds = [
+        'opponentClaim',
+        'opponentAuthor',
+        'steelman',
+        'critique',
+        'critiqueWhy',
+        'alternative',
+        'alternativeWhy',
+        'supportingResearch',
+        'conclusion'
+      ];
+
+      requiredIds.forEach(id => {
+        const el = document.getElementById(id);
+        if (!el.value.trim()) {
+          el.classList.add('input-error');
+          isValid = false;
+        }
+      });
+
+      const usedSourceRadio = document.querySelector('input[name="usedSourceBefore"]:checked');
+      if (!usedSourceRadio) {
+        document.getElementById('radioGroupContainer').classList.add('input-error');
+        isValid = false;
+      } else if (usedSourceRadio.value === 'yes') {
+        const lastName = document.getElementById('supportingAuthorLastName');
+        if (!lastName.value.trim()) {
+          lastName.classList.add('input-error');
+          isValid = false;
+        }
+      } else if (usedSourceRadio.value === 'no') {
+        const fullName = document.getElementById('supportingAuthorFullName');
+        const creds = document.getElementById('supportingAuthorCredentials');
+        if (!fullName.value.trim()) {
+          fullName.classList.add('input-error');
+          isValid = false;
+        }
+        if (!creds.value.trim()) {
+          creds.classList.add('input-error');
+          isValid = false;
+        }
+      }
+
+      return isValid;
+    }
+
     function compileParagraph() {
+      if (!validateRequiredFields()) {
+        alert('Please fill in all highlighted fields before compiling the paragraph.');
+        return;
+      }
+
       const opponentAuthor = document.getElementById('opponentAuthor').value.trim() || "The opponent";
       let opponentClaim = cleanInputText(document.getElementById('opponentClaim').value);
       const isDirectQuote = document.getElementById('isDirectQuote').checked;
@@ -327,14 +425,14 @@
       }
 
       const htmlParagraph = `
-        <span class="hl-f1">${opponentAuthor} argues that ${opponentClaim || "[Field 1]"}</span>. 
-        <span class="hl-f2">This is a reasonable argument because ${steelman || "[Field 2]"}</span>. 
-        <span class="hl-f3a">However, ${critique || "[Field 3a]"}</span>. 
-        <span class="hl-f3b">This is a problem because ${critiqueWhy || "[Field 3b]"}</span>. 
-        <span class="hl-f4a">An alternative solution is ${alternative || "[Field 4a]"}</span>. 
-        <span class="hl-f4b">This solution is better because ${alternativeWhy || "[Field 4b]"}</span>. 
-        <span class="hl-f5">According to ${authorAttribution}, ${supportingResearch || "[Supporting Research]"}</span>. 
-        <span class="hl-f6">Ultimately, ${conclusion || "[Conclusion]"}</span>.
+        <span class="hl-f1">${opponentAuthor} argues that ${opponentClaim}</span>. 
+        <span class="hl-f2">This is a reasonable argument because ${steelman}</span>. 
+        <span class="hl-f3a">However, ${critique}</span>. 
+        <span class="hl-f3b">This is a problem because ${critiqueWhy}</span>. 
+        <span class="hl-f4a">An alternative solution is ${alternative}</span>. 
+        <span class="hl-f4b">This solution is better because ${alternativeWhy}</span>. 
+        <span class="hl-f5">According to ${authorAttribution}, ${supportingResearch}</span>. 
+        <span class="hl-f6">Ultimately, ${conclusion}</span>.
       `;
 
       const paragraphContainer = document.getElementById('paragraphOutput');
@@ -345,7 +443,48 @@
       paragraphContainer.scrollIntoView({ behavior: 'smooth' });
     }
 
+    function copyCompiledText() {
+      const paragraphBox = document.getElementById('compiledParagraph');
+      navigator.clipboard.writeText(paragraphBox.innerText).then(() => {
+        const copyBtn = document.getElementById('copyBtn');
+        copyBtn.innerText = 'Copied!';
+        setTimeout(() => { copyBtn.innerText = 'Copy Text'; }, 2000);
+      });
+    }
+
+    function resetForm() {
+      if (confirm('Are you sure you want to reset all fields and clear the results?')) {
+        const textareas = document.querySelectorAll('textarea');
+        textareas.forEach(t => t.value = '');
+
+        const textInputs = document.querySelectorAll('input[type="text"]');
+        textInputs.forEach(i => i.value = '');
+
+        const checkboxes = document.querySelectorAll('input[type="checkbox"]');
+        checkboxes.forEach(c => c.checked = false);
+
+        const radios = document.querySelectorAll('input[type="radio"]');
+        radios.forEach(r => r.checked = false);
+
+        document.getElementById('sourceYesFields').classList.add('hidden');
+        document.getElementById('sourceNoFields').classList.add('hidden');
+
+        document.getElementById('paragraphOutput').classList.add('hidden');
+        document.getElementById('output').classList.add('hidden');
+        document.getElementById('compiledParagraph').innerHTML = '';
+        document.getElementById('output').innerHTML = '';
+
+        clearValidationErrors();
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+    }
+
     async function evaluateArgument() {
+      if (!validateRequiredFields()) {
+        alert('Please fill in all highlighted fields before running the evaluation.');
+        return;
+      }
+
       const apiKeyInput = document.getElementById('apiKey');
       const apiKey = apiKeyInput.value.trim();
       
@@ -367,6 +506,7 @@
       localStorage.setItem('gemini_key', apiKey);
 
       submitBtn.disabled = true;
+      outputDiv.classList.remove('hidden');
       outputDiv.innerHTML = '<em>Analyzing argument structure...</em>';
 
       const promptText = `You are a helpful, encouraging writing and logic coach evaluating a student's argument breakdown.
@@ -430,6 +570,7 @@ You MUST follow this exact formatting structure for your response every single t
         outputDiv.innerHTML = '<strong>Request failed:</strong> ' + err.message;
       } finally {
         submitBtn.disabled = false;
+        outputDiv.scrollIntoView({ behavior: 'smooth' });
       }
     }
   </script>
